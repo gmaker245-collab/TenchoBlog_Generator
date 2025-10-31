@@ -253,7 +253,7 @@ function uploadToCloudinary(file, inputEl, parentDiv) {
         showPreview(data.secure_url, parentDiv);
         validateInputs();
       } else alert("アップロードに失敗しました");
-    } catch(e) { alert("アップロードエラー: "+e.message); }
+    } catch(e) { alert("アップロードエラー: " + e.message); }
   };
   xhr.onerror = () => alert("アップロードに失敗しました");
   xhr.send(formData);
@@ -277,7 +277,9 @@ function addUploadButton(div) {
   uploadBtn.className = 'uploadBtn';
 
   const fileInput = document.createElement('input');
-  fileInput.type='file'; fileInput.accept='image/*'; fileInput.style.display='none';
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
 
   uploadBtn.onclick = () => fileInput.click();
   fileInput.onchange = () => {
@@ -298,9 +300,11 @@ function addImageField() {
   imageCount++;
   const div = document.createElement('div');
   div.className = 'image-input';
-  div.innerHTML = `<label>画像URL（${imageCount}枚目）</label>
+  div.innerHTML = `
+    <label>画像URL（${imageCount}枚目）</label>
     <input type="text" class="imageUrl" placeholder="https://example.com/image${imageCount}.jpg" />
-    <div><button class="removeBtn" onclick="removeImageField(this)">削除</button></div>`;
+    <div><button class="removeBtn" onclick="removeImageField(this)">削除</button></div>
+  `;
   addUploadButton(div);
   imageInputs.appendChild(div);
   validateInputs();
@@ -309,45 +313,44 @@ function addImageField() {
 // 削除
 function removeImageField(btn) { btn.closest('.image-input').remove(); validateInputs(); }
 
-// Sortable
-Sortable.create(imageInputs,{animation:150,handle:'.image-input'});
+// Sortable対応
+Sortable.create(imageInputs, { animation: 150, handle: '.image-input' });
 
 // HTML生成
 function generateCode() {
   const shop = shopSelect;
-  const images = [...document.querySelectorAll('.imageUrl')].map(i=>i.value.trim()).filter(Boolean);
-  if(!shop.value||images.length===0) return;
+  const images = [...document.querySelectorAll('.imageUrl')].map(i => i.value.trim()).filter(Boolean);
+  if (!shop.value || images.length === 0) return;
+
   const shopId = shop.value;
   const reviewUrl = shop.selectedOptions[0].dataset.review;
   const vanillaUrl = shop.selectedOptions[0].dataset.vanilla;
   const goldUrl = shop.selectedOptions[0].dataset.gold;
-  const isCocktail = shopId==='kktrszok';
-  const waveBg = (c1,c2)=>`background: linear-gradient(90deg, ${c1}, ${c2}); position: relative; overflow: hidden;`;
+  const isCocktail = shopId === 'kktrszok';
+
+  const waveBg = (color1,color2) => `background:linear-gradient(90deg,${color1},${color2});position:relative;overflow:hidden;`;
   const styles = isCocktail
     ? [`${waveBg('#ff7eb3','#ff758c')}color:#fff;`,` ${waveBg('#6a85b6','#bac8e0')}color:#fff;`,` ${waveBg('#a8edea','#fed6e3')}color:#222;`,` ${waveBg('#f6d365','#fda085')}color:#222;font-weight:bold;`]
     : ['background:#ff3366;color:#fff;','background:#2196F3;color:#fff;','background:#9C27B0;color:#fff;','background:linear-gradient(45deg,#FFD700,#FFA500);color:#000;font-weight:bold;'];
 
-  let htmlCode = images.map(url=>`<p><img src="${url}" width="100%" style="cursor:pointer;" onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{}).catch(console.error);})()"></p>`).join('\n');
+  let htmlCode = images.map(url => `<p><img src="${url}" width="100%" style="cursor:pointer;" onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{/* kept */}).catch(console.error);})()"></p>`).join('\n');
 
   htmlCode += `<div style="display:flex;flex-wrap:wrap;">
-    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{}).catch(console.error);})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[0]}">このお店をキープする</button>
-    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${reviewUrl}';}).catch(()=>{location.href='${reviewUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[1]}">口コミを見る</button>
-    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${vanillaUrl}';}).catch(()=>{location.href='${vanillaUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[2]}">バニラdeデビューを見る</button>
-    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${goldUrl}';}).catch(()=>{location.href='${goldUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[3]}">入店祝金を受け取る</button>
-    </div>`;
+  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{/* kept */}).catch(console.error);})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[0]}">このお店をキープする</button>
+  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${reviewUrl}';}).catch(()=>{location.href='${reviewUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[1]}">口コミを見る</button>
+  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${vanillaUrl}';}).catch(()=>{location.href='${vanillaUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[2]}">バニラdeデビューを見る</button>
+  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${goldUrl}';}).catch(()=>{location.href='${goldUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[3]}">入店祝金を受け取る</button>
+  </div>`;
 
   output.value = htmlCode.trim();
   document.getElementById('preview').innerHTML = htmlCode;
 }
 
-// コピーしてトップへスクロール
+// コピーしてトップにスクロール
 function copyCode() {
   output.select();
   navigator.clipboard.writeText(output.value)
-    .then(()=> {
-      alert('コピーしました！');
-      window.scrollTo({ top:0, behavior:'smooth' });
-    })
+    .then(()=> { alert('コピーしました！'); window.scrollTo({ top:0, behavior:'smooth' }); })
     .catch(()=> alert('コピーに失敗しました'));
 }
 </script>
