@@ -5,41 +5,162 @@
 <title>複数画像対応｜キープボタンHTMLジェネレーター</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* ===== Body & Typography ===== */
 body {
   font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
   padding: 40px;
   color: #333;
+  transition: all 0.3s ease;
 }
-h1 { text-align: center; margin-bottom: 30px; color: #222; text-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
-.form-group { margin-bottom: 20px; }
-label { display: block; font-weight: 500; margin-bottom: 8px; }
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #222;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+  font-size: 2em;
+}
+
+/* ===== Form Groups ===== */
+.form-group {
+  margin-bottom: 25px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+/* ===== Inputs ===== */
 select, input[type="text"], textarea {
-  padding: 12px 15px; width: 100%; max-width: 500px;
-  font-size: 16px; border: 1px solid #ccc; border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s;
+  padding: 12px 15px;
+  width: 100%;
+  max-width: 500px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+  transition: 0.2s;
 }
 select:focus, input[type="text"]:focus, textarea:focus {
-  border-color: #4CAF50; box-shadow: 0 0 8px rgba(76,175,80,0.3); outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 10px rgba(76,175,80,0.3);
+  outline: none;
 }
+
+/* ===== Buttons ===== */
 button {
-  padding: 12px 25px; font-size: 16px; border: none; border-radius: 8px;
-  cursor: pointer; transition: 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 12px 25px;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-button:disabled { background: #aaa; cursor: not-allowed; box-shadow: none; }
-#generateBtn { background: linear-gradient(45deg, #4CAF50, #66BB6A); color: #fff; font-weight: 500; }
-#generateBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
-#addImageBtn { background:#2196F3; color:#fff; margin-top:10px; }
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Primary Buttons */
+#generateBtn {
+  background: linear-gradient(45deg,#4CAF50,#66BB6A);
+  color:#fff;
+  font-weight:500;
+}
+#generateBtn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+#addImageBtn {
+  background: #2196F3;
+  color:#fff;
+  margin-top:10px;
+}
 #addImageBtn:hover { background:#1976D2; }
-#preview { margin-top: 30px; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-.image-input { margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; max-width:500px; }
-.image-input input { flex: 1; }
-.removeBtn { background: #e53935; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: 0.2s; }
-.removeBtn:hover { background: #c62828; }
-#copyBtn { margin-top: 10px; background: #FF9800; color: #fff; font-weight: 500; }
-#copyBtn:hover { background: #FB8C00; }
-.preview-img { border: 1px solid #ccc; border-radius: 8px; }
-.uploadBtn { margin-top: 5px; }
+
+/* Copy Button */
+#copyBtn {
+  margin-top: 10px;
+  background: #FF9800;
+  color: #fff;
+  font-weight: 500;
+}
+#copyBtn:hover { background:#FB8C00; }
+
+/* ===== Preview ===== */
+#preview {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.preview-img {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  max-width: 200px;
+  max-height: 150px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.preview-img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+/* ===== Image Input ===== */
+.image-input {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 500px;
+}
+.removeBtn {
+  background: #e53935;
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  padding:8px 12px;
+}
+.removeBtn:hover { background:#c62828; }
+
+/* Upload Button */
+.uploadBtn {
+  margin-top: 5px;
+  background: #4CAF50;
+  color:#fff;
+  padding:8px 12px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+}
+.uploadBtn:hover { background:#43A047; }
+
+/* Progress Bar */
+progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  appearance: none;
+  margin-top: 5px;
+}
+progress::-webkit-progress-bar { background-color: #eee; }
+progress::-webkit-progress-value { background-color: #4CAF50; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -90,8 +211,8 @@ const imageInputs = document.getElementById('imageInputs');
 let imageCount = 1;
 
 // Cloudinary設定
-const CLOUD_NAME = "dgcpnleyv"; // ←変更
-const UPLOAD_PRESET = "tenchoblog_upload"; // ←変更
+const CLOUD_NAME = "あなたのcloud_name"; // ←変更
+const UPLOAD_PRESET = "あなたのupload_preset"; // ←変更
 
 // 入力チェック
 function validateInputs() {
@@ -102,11 +223,10 @@ function validateInputs() {
 shopSelect.addEventListener('change', validateInputs);
 imageInputs.addEventListener('input', validateInputs);
 
-// 画像アップロード
+// Cloudinaryアップロード
 function uploadToCloudinary(file, inputEl, parentDiv) {
   const folderName = shopSelect.value || 'default';
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", UPLOAD_PRESET);
@@ -115,19 +235,15 @@ function uploadToCloudinary(file, inputEl, parentDiv) {
   let progress = parentDiv.querySelector('progress');
   if (!progress) {
     progress = document.createElement('progress');
-    progress.max = 100;
-    progress.value = 0;
-    progress.style.width = '100%';
+    progress.max = 100; progress.value = 0;
     parentDiv.appendChild(progress);
   }
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", url);
-
   xhr.upload.onprogress = (e) => {
     if (e.lengthComputable) progress.value = (e.loaded / e.total) * 100;
   };
-
   xhr.onload = () => {
     progress.value = 100;
     try {
@@ -137,11 +253,8 @@ function uploadToCloudinary(file, inputEl, parentDiv) {
         showPreview(data.secure_url, parentDiv);
         validateInputs();
       } else alert("アップロードに失敗しました");
-    } catch(e) {
-      alert("アップロードエラー: " + e.message);
-    }
+    } catch(e) { alert("アップロードエラー: "+e.message); }
   };
-
   xhr.onerror = () => alert("アップロードに失敗しました");
   xhr.send(formData);
 }
@@ -152,8 +265,6 @@ function showPreview(url, parentDiv) {
   if (!preview) {
     preview = document.createElement('img');
     preview.className = 'preview-img';
-    preview.style.width = '100px';
-    preview.style.marginTop = '8px';
     parentDiv.appendChild(preview);
   }
   preview.src = url;
@@ -164,20 +275,11 @@ function addUploadButton(div) {
   const uploadBtn = document.createElement('button');
   uploadBtn.textContent = 'アップロード';
   uploadBtn.className = 'uploadBtn';
-  uploadBtn.style.background = '#4CAF50';
-  uploadBtn.style.color = '#fff';
-  uploadBtn.style.padding = '8px 12px';
-  uploadBtn.style.borderRadius = '8px';
-  uploadBtn.style.border = 'none';
-  uploadBtn.style.cursor = 'pointer';
 
   const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.style.display = 'none';
+  fileInput.type='file'; fileInput.accept='image/*'; fileInput.style.display='none';
 
   uploadBtn.onclick = () => fileInput.click();
-
   fileInput.onchange = () => {
     const file = fileInput.files[0];
     if (file) uploadToCloudinary(file, div.querySelector('.imageUrl'), div);
@@ -196,11 +298,9 @@ function addImageField() {
   imageCount++;
   const div = document.createElement('div');
   div.className = 'image-input';
-  div.innerHTML = `
-    <label>画像URL（${imageCount}枚目）</label>
+  div.innerHTML = `<label>画像URL（${imageCount}枚目）</label>
     <input type="text" class="imageUrl" placeholder="https://example.com/image${imageCount}.jpg" />
-    <div><button class="removeBtn" onclick="removeImageField(this)">削除</button></div>
-  `;
+    <div><button class="removeBtn" onclick="removeImageField(this)">削除</button></div>`;
   addUploadButton(div);
   imageInputs.appendChild(div);
   validateInputs();
@@ -209,45 +309,46 @@ function addImageField() {
 // 削除
 function removeImageField(btn) { btn.closest('.image-input').remove(); validateInputs(); }
 
-// Sortable対応
-Sortable.create(imageInputs, { animation: 150, handle: '.image-input' });
+// Sortable
+Sortable.create(imageInputs,{animation:150,handle:'.image-input'});
 
 // HTML生成
 function generateCode() {
   const shop = shopSelect;
-  const images = [...document.querySelectorAll('.imageUrl')].map(i => i.value.trim()).filter(Boolean);
-  if (!shop.value || images.length === 0) return;
-
+  const images = [...document.querySelectorAll('.imageUrl')].map(i=>i.value.trim()).filter(Boolean);
+  if(!shop.value||images.length===0) return;
   const shopId = shop.value;
   const reviewUrl = shop.selectedOptions[0].dataset.review;
   const vanillaUrl = shop.selectedOptions[0].dataset.vanilla;
   const goldUrl = shop.selectedOptions[0].dataset.gold;
-  const isCocktail = shopId === 'kktrszok';
-
-  const waveBg = (color1, color2) => `background: linear-gradient(90deg, ${color1}, ${color2}); position: relative; overflow: hidden;`;
+  const isCocktail = shopId==='kktrszok';
+  const waveBg = (c1,c2)=>`background: linear-gradient(90deg, ${c1}, ${c2}); position: relative; overflow: hidden;`;
   const styles = isCocktail
-    ? [`${waveBg('#ff7eb3','#ff758c')}color:#fff;`, `${waveBg('#6a85b6','#bac8e0')}color:#fff;`, `${waveBg('#a8edea','#fed6e3')}color:#222;`, `${waveBg('#f6d365','#fda085')}color:#222;font-weight:bold;`]
-    : ['background:#ff3366;color:#fff;', 'background:#2196F3;color:#fff;', 'background:#9C27B0;color:#fff;', 'background:linear-gradient(45deg,#FFD700,#FFA500);color:#000;font-weight:bold;'];
+    ? [`${waveBg('#ff7eb3','#ff758c')}color:#fff;`,` ${waveBg('#6a85b6','#bac8e0')}color:#fff;`,` ${waveBg('#a8edea','#fed6e3')}color:#222;`,` ${waveBg('#f6d365','#fda085')}color:#222;font-weight:bold;`]
+    : ['background:#ff3366;color:#fff;','background:#2196F3;color:#fff;','background:#9C27B0;color:#fff;','background:linear-gradient(45deg,#FFD700,#FFA500);color:#000;font-weight:bold;'];
 
-  let htmlCode = images.map(url => `<p><img src="${url}" width="100%" style="cursor:pointer;" onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{/* kept */}).catch(console.error);})()"></p>`).join('\n');
+  let htmlCode = images.map(url=>`<p><img src="${url}" width="100%" style="cursor:pointer;" onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{}).catch(console.error);})()"></p>`).join('\n');
 
   htmlCode += `<div style="display:flex;flex-wrap:wrap;">
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{/* kept */}).catch(console.error);})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[0]}">このお店をキープする</button>
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${reviewUrl}';}).catch(()=>{location.href='${reviewUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[1]}">口コミを見る</button>
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${vanillaUrl}';}).catch(()=>{location.href='${vanillaUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[2]}">バニラdeデビューを見る</button>
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${goldUrl}';}).catch(()=>{location.href='${goldUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[3]}">入店祝金を受け取る</button>
-  </div>`;
+    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{}).catch(console.error);})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[0]}">このお店をキープする</button>
+    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${reviewUrl}';}).catch(()=>{location.href='${reviewUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[1]}">口コミを見る</button>
+    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${vanillaUrl}';}).catch(()=>{location.href='${vanillaUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[2]}">バニラdeデビューを見る</button>
+    <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${goldUrl}';}).catch(()=>{location.href='${goldUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[3]}">入店祝金を受け取る</button>
+    </div>`;
 
   output.value = htmlCode.trim();
   document.getElementById('preview').innerHTML = htmlCode;
 }
 
-// コピー
+// コピーしてトップへスクロール
 function copyCode() {
   output.select();
   navigator.clipboard.writeText(output.value)
-    .then(() => alert('コピーしました！'))
-    .catch(() => alert('コピーに失敗しました'));
+    .then(()=> {
+      alert('コピーしました！');
+      window.scrollTo({ top:0, behavior:'smooth' });
+    })
+    .catch(()=> alert('コピーに失敗しました'));
 }
 </script>
 </body>
