@@ -2,358 +2,1685 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
-<title>バニラHack!HTML Generator</title>
-<link rel="icon" href="https://res.cloudinary.com/dgcpnleyv/image/upload/v1762512585/default/ukjwjnmeksc4ftvqtwe6.png" type="image/png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>店長ブログ HTMLジェネレーター</title>
+<meta name="description" content="バニラ・cocoa対応。店長ブログ用のキープボタン付きHTMLを簡単生成。" />
+<link rel="icon" href="https://res.cloudinary.com/dgcpnleyv/image/upload/v1762512585/default/ukjwjnmeksc4ftvqtwe6.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+/* ============================================================
+   CSS変数・リセット
+   ============================================================ */
+:root {
+  --bg-primary:    #0d0f17;
+  --bg-secondary:  #131623;
+  --bg-card:       #1a1e2e;
+  --bg-card-hover: #1f2438;
+  --bg-input:      #222740;
+  --border:        #2e3450;
+  --border-focus:  #6c7bff;
+  --accent-1:      #6c7bff;
+  --accent-2:      #b87ffe;
+  --accent-grad:   linear-gradient(135deg, #6c7bff 0%, #b87ffe 100%);
+  --vanilla-color: #ff5c8a;
+  --cocoa-color:   #c9814a;
+  --text-primary:  #f0f2ff;
+  --text-secondary:#8b92b8;
+  --text-muted:    #555e80;
+  --success:       #3ecf7d;
+  --warning:       #f5a623;
+  --danger:        #ff5c5c;
+  --radius-sm:     8px;
+  --radius-md:     14px;
+  --radius-lg:     20px;
+  --radius-xl:     28px;
+  --shadow-card:   0 8px 32px rgba(0,0,0,0.4);
+  --shadow-glow:   0 0 40px rgba(108,123,255,0.2);
+  --transition:    all 0.25s cubic-bezier(0.4,0,0.2,1);
+  --font-main:     'Noto Sans JP', 'Inter', sans-serif;
+}
 
-/* ===== Body & Typography ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: 'Roboto', sans-serif;
-  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-  padding: 40px;
-  color: #333;
-  transition: all 0.3s ease;
-}
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #222;
-  text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
-  font-size: 2em;
+  font-family: var(--font-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* ===== Form Groups ===== */
-.form-group {
-  margin-bottom: 25px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+/* ============================================================
+   背景装飾
+   ============================================================ */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
 }
-label {
-  display: block;
+.bg-orbs::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(108,123,255,0.12) 0%, transparent 70%);
+  top: -200px; left: -200px;
+  animation: float1 12s ease-in-out infinite;
+}
+.bg-orbs::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(184,127,254,0.1) 0%, transparent 70%);
+  bottom: -150px; right: -150px;
+  animation: float2 15s ease-in-out infinite;
+}
+@keyframes float1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(60px,40px) scale(1.1); }
+}
+@keyframes float2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(-40px,-60px) scale(1.15); }
+}
+
+/* ============================================================
+   ヘッダー
+   ============================================================ */
+.header {
+  position: relative;
+  z-index: 10;
+  padding: 28px 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(108,123,255,0.15);
+  border: 1px solid rgba(108,123,255,0.3);
+  border-radius: 99px;
+  padding: 4px 14px;
+  font-size: 11px;
+  color: var(--accent-1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.header-badge .dot {
+  width: 6px; height: 6px;
+  background: var(--accent-1);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.7); }
+}
+.header h1 {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 900;
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.header p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   メインレイアウト
+   ============================================================ */
+.main-container {
+  position: relative;
+  z-index: 10;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
+}
+
+/* ============================================================
+   ステップインジケーター
+   ============================================================ */
+.step-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 40px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 0 8px;
+  scrollbar-width: none;
+}
+.step-nav::-webkit-scrollbar { display: none; }
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.step-circle {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  transition: var(--transition);
+  position: relative;
+}
+.step-item.active .step-circle {
+  background: var(--accent-grad);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(108,123,255,0.5);
+}
+.step-item.done .step-circle {
+  background: var(--success);
+  border-color: transparent;
+  color: #fff;
+}
+.step-item.done .step-circle::after {
+  content: '✓';
+  position: absolute;
+  font-size: 16px;
+}
+.step-item.done .step-circle span { display: none; }
+.step-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
   font-weight: 500;
+  letter-spacing: 0.03em;
+  max-width: 60px;
+}
+.step-item.active .step-label,
+.step-item.done .step-label {
+  color: var(--text-secondary);
+}
+.step-connector {
+  width: 32px; height: 2px;
+  background: var(--border);
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.step-connector.done { background: var(--success); }
+
+/* ============================================================
+   ステップパネル
+   ============================================================ */
+.step-panel {
+  display: none;
+  animation: fadeSlideIn 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.step-panel.active { display: block; }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   カード
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-card);
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   サイト選択カード（Step 1）
+   ============================================================ */
+.site-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.site-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  background: var(--bg-input);
+  position: relative;
+  overflow: hidden;
+}
+.site-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: var(--transition);
+}
+.site-card.vanilla::before { background: radial-gradient(circle at 50% 0%, rgba(255,92,138,0.15), transparent 60%); }
+.site-card.cocoa::before   { background: radial-gradient(circle at 50% 0%, rgba(201,129,74,0.15), transparent 60%); }
+.site-card:hover,
+.site-card.selected {
+  border-color: var(--accent-1);
+  background: var(--bg-card-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(108,123,255,0.2);
+}
+.site-card:hover::before,
+.site-card.selected::before { opacity: 1; }
+.site-card.vanilla.selected { border-color: var(--vanilla-color); box-shadow: 0 12px 32px rgba(255,92,138,0.2); }
+.site-card.cocoa.selected   { border-color: var(--cocoa-color);   box-shadow: 0 12px 32px rgba(201,129,74,0.2); }
+
+.site-logo {
+  font-size: 40px;
   margin-bottom: 10px;
 }
-
-/* ===== Inputs ===== */
-select, input[type="text"], textarea {
-  padding: 12px 15px;
-  width: 100%;
-  max-width: 500px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-  transition: 0.2s;
+.site-name {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
 }
-select:focus, input[type="text"]:focus, textarea:focus {
-  border-color: #4CAF50;
-  box-shadow: 0 0 10px rgba(76,175,80,0.3);
+.site-card.vanilla .site-name { color: var(--vanilla-color); }
+.site-card.cocoa   .site-name { color: var(--cocoa-color); }
+.site-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.check-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 22px; height: 22px;
+  background: var(--success);
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+.site-card.selected .check-badge { display: flex; }
+
+/* ============================================================
+   店舗選択（Step 2）
+   ============================================================ */
+.shop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.shop-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg-input);
+  position: relative;
+}
+.shop-card:hover,
+.shop-card.selected {
+  border-color: var(--accent-1);
+  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(108,123,255,0.2);
+}
+.shop-card.selected .check-badge { display: flex; }
+.shop-icon { font-size: 32px; margin-bottom: 8px; }
+.shop-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; color: var(--text-primary); }
+.shop-id-label { font-size: 11px; color: var(--text-muted); font-family: 'Inter', monospace; }
+
+/* ============================================================
+   フォーム要素
+   ============================================================ */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-main);
+  transition: var(--transition);
   outline: none;
 }
+.form-input::placeholder { color: var(--text-muted); }
+.form-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(108,123,255,0.15);
+}
+textarea.form-input { resize: none; min-height: 100px; }
 
-/* ===== Buttons ===== */
-button {
-  padding: 12px 25px;
-  font-size: 16px;
-  border: none;
-  border-radius: 12px;
+/* ============================================================
+   画像入力（Step 3）
+   ============================================================ */
+.image-list { display: flex; flex-direction: column; gap: 12px; }
+.image-item {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: grab;
+  transition: var(--transition);
+}
+.image-item:hover { border-color: var(--border-focus); }
+.image-item.sortable-ghost { opacity: 0.4; }
+.drag-handle {
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+.image-item-content { flex: 1; min-width: 0; }
+.image-num {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.image-url-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.image-url-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'Inter', monospace;
+  outline: none;
+  transition: var(--transition);
+}
+.image-url-input::placeholder { color: var(--text-muted); }
+.image-url-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(108,123,255,0.12);
+}
+.img-thumb {
+  width: 44px; height: 44px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  display: none;
+  flex-shrink: 0;
+}
+.upload-btn {
+  padding: 8px 14px;
+  background: rgba(108,123,255,0.15);
+  border: 1.5px solid rgba(108,123,255,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--accent-1);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  white-space: nowrap;
+  transition: var(--transition);
+  flex-shrink: 0;
 }
-button:disabled {
-  background: #aaa;
-  cursor: not-allowed;
-  box-shadow: none;
+.upload-btn:hover { background: rgba(108,123,255,0.25); }
+.remove-img-btn {
+  padding: 7px 10px;
+  background: rgba(255,92,92,0.1);
+  border: 1.5px solid rgba(255,92,92,0.25);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.remove-img-btn:hover { background: rgba(255,92,92,0.2); }
+.progress-bar-wrap {
+  margin-top: 8px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  display: none;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent-grad);
+  border-radius: 99px;
+  width: 0;
+  transition: width 0.3s ease;
+}
+.add-image-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.add-image-btn:hover {
+  border-color: var(--border-focus);
+  color: var(--accent-1);
+  background: rgba(108,123,255,0.05);
 }
 
-/* Primary Buttons */
-#generateBtn {
-  background: linear-gradient(45deg,#4CAF50,#66BB6A);
-  color:#fff;
-  font-weight:500;
+/* ============================================================
+   ボタン設定（Step 4）
+   ============================================================ */
+.button-editor-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
 }
-#generateBtn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+@media(max-width: 700px) {
+  .button-editor-layout { grid-template-columns: 1fr; }
 }
-#addImageBtn {
-  background: #2196F3;
-  color:#fff;
-  margin-top:10px;
-}
-#addImageBtn:hover { background:#1976D2; }
 
-/* Copy Button */
-#copyBtn {
-  margin-top: 10px;
-  background: #FF9800;
-  color: #fff;
-  font-weight: 500;
+.btn-list { display: flex; flex-direction: column; gap: 12px; }
+.btn-editor-item {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
 }
-#copyBtn:hover { background:#FB8C00; }
-
-/* ===== Preview ===== */
-#preview {
-  margin-top: 30px;
-  padding: 20px;
-  border-radius: 16px;
+.btn-editor-item.disabled { opacity: 0.4; }
+.btn-editor-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: var(--transition);
+}
+.btn-editor-item:not(.collapsed) .btn-editor-header { border-bottom-color: var(--border); }
+.btn-editor-header:hover { background: rgba(255,255,255,0.03); }
+.btn-color-swatch {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.btn-editor-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.btn-toggle {
+  width: 36px; height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.btn-toggle.on { background: var(--success); }
+.btn-toggle::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
   background: #fff;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: var(--transition);
+}
+.btn-toggle.on::after { transform: translateX(16px); }
+.collapse-arrow {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.btn-editor-item.collapsed .collapse-arrow { transform: rotate(-90deg); }
+.btn-editor-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.btn-editor-item.collapsed .btn-editor-body { display: none; }
+
+.color-row { display: flex; gap: 10px; }
+.color-field {
+  flex: 1;
+}
+.color-field label {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 5px;
+}
+.color-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+.color-picker-wrap input[type="color"] {
+  width: 28px; height: 28px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+}
+.color-hex {
+  font-size: 12px;
+  font-family: 'Inter', monospace;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  outline: none;
+  width: 70px;
+  color: var(--text-primary);
+}
+
+.radius-row { }
+.radius-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.radius-label-row label { font-size: 11px; color: var(--text-muted); }
+.radius-value {
+  font-size: 12px;
+  font-family: 'Inter', monospace;
+  color: var(--accent-1);
+  font-weight: 600;
+}
+input[type="range"].radius-slider {
+  width: 100%;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  outline: none;
+}
+input[type="range"].radius-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(108,123,255,0.4);
+}
+
+/* プリセット */
+.preset-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.preset-chip {
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: var(--transition);
+  color: #fff;
+}
+.preset-chip:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+/* ============================================================
+   ライブプレビュー（Step 4 右カラム）
+   ============================================================ */
+.preview-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+}
+.preview-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.preview-panel-title::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+#liveButtonPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.preview-btn-item {
+  padding: 12px 16px;
+  border: none;
+  font-size: 14px;
+  font-family: var(--font-main);
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: var(--transition);
+  word-break: break-all;
+}
+.preview-btn-item:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* ============================================================
+   出力パネル（Step 5）
+   ============================================================ */
+.output-wrap {
+  position: relative;
+}
+.output-textarea {
+  width: 100%;
+  min-height: 220px;
+  background: #0a0c14;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  color: #7dd3fc;
+  font-family: 'Inter', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  transition: var(--transition);
+}
+.output-textarea:focus { border-color: var(--border-focus); }
+.copy-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  padding: 7px 16px;
+  background: var(--accent-grad);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.copy-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.copy-btn.copied {
+  background: var(--success);
+}
+
+.html-preview-box {
+  background: #fff;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-top: 16px;
+  border: 1.5px solid var(--border);
+}
+.html-preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+#htmlPreviewArea {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
+  align-items: flex-start;
 }
-.preview-img {
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  max-width: 200px;
-  max-height: 150px;
-  object-fit: contain;
-  display: block;
-  transition: transform 0.3s ease;
-}
-.preview-img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-}
-
-/* ===== Image Input ===== */
-.image-input {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-width: 500px;
-}
-.removeBtn {
-  background: #e53935;
-  color:#fff;
-  border:none;
-  border-radius:12px;
-  padding:8px 12px;
-}
-.removeBtn:hover { background:#c62828; }
-
-/* Upload Button */
-.uploadBtn {
-  margin-top: 5px;
-  background: #4CAF50;
-  color:#fff;
-  padding:8px 12px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-}
-.uploadBtn:hover { background:#43A047; }
-
-/* Progress Bar */
-progress {
-  width: 100%;
-  height: 10px;
+#htmlPreviewArea img {
+  max-width: 180px;
   border-radius: 8px;
-  overflow: hidden;
-  appearance: none;
-  margin-top: 5px;
 }
-progress::-webkit-progress-bar { background-color: #eee; }
-progress::-webkit-progress-value { background-color: #4CAF50; }
+
+/* ============================================================
+   ナビゲーションボタン
+   ============================================================ */
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 28px;
+  gap: 12px;
+}
+.btn-prev, .btn-next, .btn-generate {
+  padding: 13px 28px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-prev {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+}
+.btn-prev:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.btn-next {
+  background: var(--accent-grad);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(108,123,255,0.35);
+  margin-left: auto;
+}
+.btn-next:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(108,123,255,0.45); }
+.btn-next:disabled { opacity: 0.4; cursor: not-allowed; filter: none; transform: none; }
+.btn-generate {
+  background: linear-gradient(135deg, #3ecf7d 0%, #2ab96d 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(62,207,125,0.3);
+  margin-left: auto;
+  font-size: 15px;
+  padding: 14px 32px;
+}
+.btn-generate:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.btn-generate:disabled { opacity: 0.4; cursor: not-allowed; filter: none; transform: none; }
+
+/* ============================================================
+   アラートトースト
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.success .toast-icon { color: var(--success); }
+.toast.error .toast-icon { color: var(--danger); }
+
+/* ============================================================
+   完了画面バッジ
+   ============================================================ */
+.success-banner {
+  text-align: center;
+  padding: 40px 20px;
+}
+.success-banner .big-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: bounceIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes bounceIn {
+  0%   { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+.success-banner h2 {
+  font-size: 24px;
+  font-weight: 900;
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.success-banner p { color: var(--text-secondary); font-size: 14px; }
+
+/* ============================================================
+   レスポンシブ
+   ============================================================ */
+@media (max-width: 600px) {
+  .card { padding: 18px 14px; }
+  .site-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .shop-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .step-connector { width: 18px; }
+  .step-nav { gap: 0; }
+  .image-url-row { flex-wrap: wrap; }
+  .color-row { flex-direction: column; }
+}
+@media (max-width: 400px) {
+  .site-grid { grid-template-columns: 1fr; }
+  .shop-grid { grid-template-columns: 1fr; }
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
-<h1>複数画像対応｜キープボタンHTMLジェネレーター</h1>
 
-<div class="form-group">
-  <label>店舗を選択</label>
-  <select id="shopSelect">
-    <option value="">選択してください</option>
-    <option value="chankosz"
-            data-review="https://tokai.qzin.jp/chankosz/reviews/"
-            data-vanilla="https://tokai.qzin.jp/chankosz/#vanilladebut"
-            data-gold="https://tokai.qzin.jp/chankosz/#oubomail">ちゃんこ</option>
-    <option value="kktrszok"
-            data-review="https://tokai.qzin.jp/kktrszok/reviews/"
-            data-vanilla="https://tokai.qzin.jp/kktrszok/#vanilladebut"
-            data-gold="https://tokai.qzin.jp/kktrszok/#oubomail">カクテル</option>
-  </select>
-</div>
+<div class="bg-orbs"></div>
 
-<div class="form-group" id="imageInputs">
-  <div class="image-input">
-    <label>画像URL（1枚目）</label>
-    <input type="text" class="imageUrl" placeholder="https://example.com/image1.jpg" />
-    <div>
-      <button class="removeBtn" onclick="removeImageField(this)">削除</button>
+<!-- ヘッダー -->
+<header class="header">
+  <div class="header-badge">
+    <span class="dot"></span>
+    店長ブログ HTML ジェネレーター
+  </div>
+  <h1>キープボタン HTMLジェネレーター</h1>
+  <p>バニラ・cocoa対応 ／ 画像アップロード ／ ボタンカスタマイズ</p>
+</header>
+
+<main class="main-container">
+
+  <!-- ステップナビゲーション -->
+  <nav class="step-nav" id="stepNav">
+    <div class="step-item active" data-step="1" onclick="goToStep(1)">
+      <div class="step-circle"><span>1</span></div>
+      <div class="step-label">サイト選択</div>
+    </div>
+    <div class="step-connector" id="conn1"></div>
+    <div class="step-item" data-step="2" onclick="goToStep(2)">
+      <div class="step-circle"><span>2</span></div>
+      <div class="step-label">店舗選択</div>
+    </div>
+    <div class="step-connector" id="conn2"></div>
+    <div class="step-item" data-step="3" onclick="goToStep(3)">
+      <div class="step-circle"><span>3</span></div>
+      <div class="step-label">画像追加</div>
+    </div>
+    <div class="step-connector" id="conn3"></div>
+    <div class="step-item" data-step="4" onclick="goToStep(4)">
+      <div class="step-circle"><span>4</span></div>
+      <div class="step-label">ボタン設定</div>
+    </div>
+    <div class="step-connector" id="conn4"></div>
+    <div class="step-item" data-step="5" onclick="goToStep(5)">
+      <div class="step-circle"><span>5</span></div>
+      <div class="step-label">HTML生成</div>
+    </div>
+  </nav>
+
+  <!-- ===== STEP 1: サイト選択 ===== -->
+  <div class="step-panel active" id="step1">
+    <div class="card">
+      <div class="card-title"><span class="icon">🌐</span>サイトを選んでください</div>
+      <div class="card-desc">ブログを投稿するサイトを選択してください。サイトによってキープボタンの仕組みが異なります。</div>
+      <div class="site-grid">
+        <div class="site-card vanilla" id="siteVanilla" onclick="selectSite('vanilla')">
+          <span class="check-badge">✓</span>
+          <div class="site-logo">🍦</div>
+          <div class="site-name">Vanilla</div>
+          <div class="site-sub">バニラ求人</div>
+        </div>
+        <div class="site-card cocoa" id="siteCocoa" onclick="selectSite('cocoa')">
+          <span class="check-badge">✓</span>
+          <div class="site-logo">🍫</div>
+          <div class="site-name">cocoa</div>
+          <div class="site-sub">ここあJOB</div>
+        </div>
+      </div>
+    </div>
+    <div class="step-actions">
+      <span></span>
+      <button class="btn-next" id="nextBtn1" onclick="goToStep(2)" disabled>
+        次へ　→
+      </button>
     </div>
   </div>
-</div>
 
-<button id="addImageBtn" onclick="addImageField()">＋ 画像を追加</button>
-<button id="generateBtn" onclick="generateCode()" disabled>HTMLを生成</button>
+  <!-- ===== STEP 2: 店舗選択 ===== -->
+  <div class="step-panel" id="step2">
+    <div class="card">
+      <div class="card-title"><span class="icon">🏪</span>店舗を選んでください</div>
+      <div class="card-desc">HTMLを生成したい店舗を選択してください。</div>
+      <div class="shop-grid">
+        <div class="shop-card" id="shopChanko" onclick="selectShop('chanko')">
+          <span class="check-badge">✓</span>
+          <div class="shop-icon">🍲</div>
+          <div class="shop-name">静岡駅前ちゃんこ</div>
+          <div class="shop-id-label" id="chankoIdLabel">—</div>
+        </div>
+        <div class="shop-card" id="shopKakuteru" onclick="selectShop('kakuteru')">
+          <span class="check-badge">✓</span>
+          <div class="shop-icon">🍹</div>
+          <div class="shop-name">カクテル静岡駅前店</div>
+          <div class="shop-id-label" id="kakuteruIdLabel">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="step-actions">
+      <button class="btn-prev" onclick="goToStep(1)">← 戻る</button>
+      <button class="btn-next" id="nextBtn2" onclick="goToStep(3)" disabled>
+        次へ　→
+      </button>
+    </div>
+  </div>
 
-<div id="preview"></div>
+  <!-- ===== STEP 3: 画像アップロード ===== -->
+  <div class="step-panel" id="step3">
+    <div class="card">
+      <div class="card-title"><span class="icon">🖼️</span>ブログ画像を追加</div>
+      <div class="card-desc">
+        「アップロード」ボタンでお手元の画像を直接アップロードするか、画像URLを入力してください。<br>
+        ドラッグ＆ドロップで並び替えもできます。
+      </div>
+      <div class="image-list" id="imageList"></div>
+      <button class="add-image-btn" onclick="addImageField()">
+        ＋ 画像を追加する
+      </button>
+    </div>
+    <div class="step-actions">
+      <button class="btn-prev" onclick="goToStep(2)">← 戻る</button>
+      <button class="btn-next" id="nextBtn3" onclick="goToStep(4)" disabled>
+        次へ　→
+      </button>
+    </div>
+  </div>
 
-<div class="form-group">
-  <label>生成されたHTMLソース</label>
-  <textarea id="output" rows="10" style="width:100%;max-width:600px;"></textarea>
-  <button id="copyBtn" onclick="copyCode()">コピーする</button>
+  <!-- ===== STEP 4: ボタン設定 ===== -->
+  <div class="step-panel" id="step4">
+    <div class="card">
+      <div class="card-title"><span class="icon">🎨</span>ボタンをカスタマイズ</div>
+      <div class="card-desc">各ボタンの色・形・テキスト・リンク先をリアルタイムで編集できます。右側でボタンの見た目を確認しながら設定してください。</div>
+
+      <div class="button-editor-layout">
+        <!-- 左：ボタン設定リスト -->
+        <div class="btn-list" id="btnList"></div>
+
+        <!-- 右：ライブプレビュー -->
+        <div class="preview-panel">
+          <div class="preview-panel-title">リアルタイムプレビュー</div>
+          <div id="liveButtonPreview"></div>
+        </div>
+      </div>
+    </div>
+    <div class="step-actions">
+      <button class="btn-prev" onclick="goToStep(3)">← 戻る</button>
+      <button class="btn-generate" onclick="generateAndGoStep5()">
+        ✨ HTMLを生成する
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 5: HTML出力 ===== -->
+  <div class="step-panel" id="step5">
+    <div class="card">
+      <div class="success-banner">
+        <div class="big-icon">🎉</div>
+        <h2>HTMLが生成されました！</h2>
+        <p>下のコードをコピーして、店長ブログのHTMLソースに貼り付けてください。</p>
+      </div>
+      <div class="output-wrap">
+        <textarea class="output-textarea" id="outputCode" readonly></textarea>
+        <button class="copy-btn" id="copyBtn" onclick="copyOutput()">コピー</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="html-preview-label">📱 プレビュー（ブログ上でのイメージ）</div>
+      <div id="htmlPreviewArea"></div>
+    </div>
+
+    <div class="step-actions">
+      <button class="btn-prev" onclick="goToStep(4)">← 戻って修正</button>
+      <button class="btn-next" onclick="resetAll()" style="background:var(--bg-input);border:1.5px solid var(--border);color:var(--text-secondary);box-shadow:none;">
+        🔄 最初からやり直す
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- トースト通知 -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span id="toastMsg"></span>
 </div>
 
 <script>
-const shopSelect = document.getElementById('shopSelect');
-const generateBtn = document.getElementById('generateBtn');
-const output = document.getElementById('output');
-const imageInputs = document.getElementById('imageInputs');
-let imageCount = 1;
+/* ============================================================
+   定数・データ定義
+   ============================================================ */
+const CLOUD_NAME    = 'dgcpnleyv';
+const UPLOAD_PRESET = 'tenchoblog_upload';
 
-// Cloudinary設定
-const CLOUD_NAME = "dgcpnleyv"; // ←変更
-const UPLOAD_PRESET = "tenchoblog_upload"; // ←変更
+const SITES = {
+  vanilla: {
+    label: 'Vanilla（バニラ）',
+    keepType: 'ajax',
+    keepUrl: 'https://tokai.qzin.jp/user/ajax/keeplist_add',
+    shops: {
+      chanko:   { id: 'chankosz',  reviewUrl: 'https://tokai.qzin.jp/chankosz/reviews/', vanillaUrl: 'https://tokai.qzin.jp/chankosz/#vanilladebut', goldUrl: 'https://tokai.qzin.jp/chankosz/#oubomail' },
+      kakuteru: { id: 'kktrszok',  reviewUrl: 'https://tokai.qzin.jp/kktrszok/reviews/', vanillaUrl: 'https://tokai.qzin.jp/kktrszok/#vanilladebut', goldUrl: 'https://tokai.qzin.jp/kktrszok/#oubomail' }
+    }
+  },
+  cocoa: {
+    label: 'cocoa（ここあJOB）',
+    keepType: 'job_keep',
+    shops: {
+      chanko:   { autonum: '11328', shopUrl: 'https://cocoa-job.jp/17/shop/11328/' },
+      kakuteru: { autonum: '29785', shopUrl: 'https://cocoa-job.jp/17/shop/29785/' }
+    }
+  }
+};
 
-// 入力チェック
-function validateInputs() {
-  const isShopSelected = shopSelect.value !== '';
-  const hasAnyImage = [...document.querySelectorAll('.imageUrl')].some(input => input.value.trim() !== '');
-  generateBtn.disabled = !(isShopSelected && hasAnyImage);
+// デフォルトボタン設定
+const DEFAULT_BUTTONS_VANILLA = [
+  { id: 'keep',    label: 'キープ',    text: 'このお店をキープする', bgColor: '#ff3366', textColor: '#ffffff', radius: 99, url: '',         action: 'keep',    enabled: true },
+  { id: 'review',  label: '口コミ',    text: '口コミを見る',         bgColor: '#4f46e5', textColor: '#ffffff', radius: 99, url: '',         action: 'link',    enabled: true },
+  { id: 'debut',   label: 'デビュー',  text: 'バニラdeデビューを見る', bgColor: '#7c3aed', textColor: '#ffffff', radius: 99, url: '',       action: 'link',    enabled: true },
+  { id: 'gold',    label: '入店祝金',  text: '入店祝金を受け取る',   bgColor: '#f59e0b', textColor: '#000000', radius: 99, url: '',         action: 'link',    enabled: true }
+];
+const DEFAULT_BUTTONS_COCOA = [
+  { id: 'keep',    label: 'キープ',    text: 'キープする',            bgColor: '#c9814a', textColor: '#ffffff', radius: 99, url: '',         action: 'keep',    enabled: true },
+  { id: 'detail',  label: 'お店詳細',  text: 'お店の詳細を見る',     bgColor: '#5c4033', textColor: '#ffffff', radius: 99, url: '',         action: 'link',    enabled: true },
+  { id: 'custom1', label: 'カスタム1', text: '',                      bgColor: '#2563eb', textColor: '#ffffff', radius: 99, url: '',         action: 'link',    enabled: false },
+  { id: 'custom2', label: 'カスタム2', text: '',                      bgColor: '#059669', textColor: '#ffffff', radius: 99, url: '',         action: 'link',    enabled: false }
+];
+
+const PRESETS = [
+  { name: 'ピンク',    bg: '#ff3366', text: '#ffffff' },
+  { name: 'インディゴ', bg: '#4f46e5', text: '#ffffff' },
+  { name: 'パープル',  bg: '#7c3aed', text: '#ffffff' },
+  { name: 'ゴールド',  bg: '#f59e0b', text: '#000000' },
+  { name: 'グリーン',  bg: '#059669', text: '#ffffff' },
+  { name: 'スカイ',   bg: '#0ea5e9', text: '#ffffff' },
+  { name: 'チョコ',   bg: '#c9814a', text: '#ffffff' },
+  { name: 'ブラック',  bg: '#111111', text: '#ffffff' }
+];
+
+/* ============================================================
+   状態
+   ============================================================ */
+let state = {
+  site:     null,   // 'vanilla' | 'cocoa'
+  shop:     null,   // 'chanko' | 'kakuteru'
+  images:   [],     // { url: string }[]
+  buttons:  [],     // ボタン設定配列
+  currentStep: 1,
+  maxReached: 1
+};
+let imageCount = 0;
+let sortableInstance = null;
+
+/* ============================================================
+   ユーティリティ
+   ============================================================ */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  const msgEl = document.getElementById('toastMsg');
+  t.className = `toast ${type}`;
+  icon.textContent = type === 'success' ? '✅' : '❌';
+  msgEl.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
-shopSelect.addEventListener('change', validateInputs);
-imageInputs.addEventListener('input', validateInputs);
 
-// Cloudinaryアップロード
-function uploadToCloudinary(file, inputEl, parentDiv) {
-  const folderName = shopSelect.value || 'default';
-  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", UPLOAD_PRESET);
-  formData.append("folder", folderName);
+/* ============================================================
+   ステップ制御
+   ============================================================ */
+function goToStep(n) {
+  if (n > state.maxReached && n !== state.currentStep + 1) return;
+  if (n === 2 && !state.site) { showToast('サイトを選んでください', 'error'); return; }
+  if (n === 3 && !state.shop) { showToast('店舗を選んでください', 'error'); return; }
 
-  let progress = parentDiv.querySelector('progress');
-  if (!progress) {
-    progress = document.createElement('progress');
-    progress.max = 100; progress.value = 0;
-    parentDiv.appendChild(progress);
+  // ステップ4に進む時にボタン設定を初期化（まだなら）
+  if (n === 4) {
+    if (!state.buttons || state.buttons.length === 0) {
+      initButtons();
+    }
+    renderButtonEditors();
+    updateLivePreview();
   }
 
+  // パネル切替
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`step${n}`).classList.add('active');
+
+  // ナビゲーター更新
+  state.currentStep = n;
+  if (n > state.maxReached) state.maxReached = n;
+  updateStepNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStepNav() {
+  document.querySelectorAll('.step-item').forEach(item => {
+    const s = parseInt(item.dataset.step);
+    item.classList.remove('active', 'done');
+    if (s === state.currentStep) item.classList.add('active');
+    else if (s < state.currentStep) item.classList.add('done');
+  });
+  // コネクター更新
+  for (let i = 1; i <= 4; i++) {
+    const c = document.getElementById(`conn${i}`);
+    if (i < state.currentStep) c.classList.add('done');
+    else c.classList.remove('done');
+  }
+}
+
+/* ============================================================
+   Step 1: サイト選択
+   ============================================================ */
+function selectSite(site) {
+  state.site = site;
+  state.shop = null;
+  state.buttons = [];
+
+  document.getElementById('siteVanilla').classList.toggle('selected', site === 'vanilla');
+  document.getElementById('siteCocoa').classList.toggle('selected', site === 'cocoa');
+
+  // 店舗IDラベル更新
+  const d = SITES[site].shops;
+  if (site === 'vanilla') {
+    document.getElementById('chankoIdLabel').textContent   = `shop_id: ${d.chanko.id}`;
+    document.getElementById('kakuteruIdLabel').textContent = `shop_id: ${d.kakuteru.id}`;
+  } else {
+    document.getElementById('chankoIdLabel').textContent   = `autonum: ${d.chanko.autonum}`;
+    document.getElementById('kakuteruIdLabel').textContent = `autonum: ${d.kakuteru.autonum}`;
+  }
+
+  document.getElementById('nextBtn1').disabled = false;
+}
+
+/* ============================================================
+   Step 2: 店舗選択
+   ============================================================ */
+function selectShop(shop) {
+  state.shop = shop;
+  state.buttons = []; // リセット
+
+  document.getElementById('shopChanko').classList.toggle('selected', shop === 'chanko');
+  document.getElementById('shopKakuteru').classList.toggle('selected', shop === 'kakuteru');
+  document.getElementById('nextBtn2').disabled = false;
+
+  // 画像リスト初期化
+  if (document.getElementById('imageList').children.length === 0) {
+    addImageField();
+  }
+}
+
+/* ============================================================
+   Step 3: 画像
+   ============================================================ */
+function addImageField() {
+  if (imageCount >= 30) { showToast('画像は最大30枚までです', 'error'); return; }
+  imageCount++;
+  const idx = imageCount;
+  const list = document.getElementById('imageList');
+
+  const item = document.createElement('div');
+  item.className = 'image-item';
+  item.dataset.index = idx;
+  item.innerHTML = `
+    <span class="drag-handle" title="ドラッグで並び替え">⠿</span>
+    <div class="image-item-content">
+      <div class="image-num">画像 ${idx} 枚目</div>
+      <div class="image-url-row">
+        <input type="text" class="image-url-input imageUrlField"
+               placeholder="https://example.com/image.jpg"
+               oninput="onImageUrlChange(this)"
+               onblur="onImageUrlBlur(this)" />
+        <button class="upload-btn" onclick="triggerUpload(this)">📤 アップロード</button>
+        <input type="file" accept="image/*" style="display:none;" onchange="onFileSelect(this)" />
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+    </div>
+    <img class="img-thumb" src="" alt="" />
+    <button class="remove-img-btn" onclick="removeImageField(this)" title="削除">✕</button>
+  `;
+  list.appendChild(item);
+
+  // Sortable再初期化
+  if (sortableInstance) sortableInstance.destroy();
+  sortableInstance = Sortable.create(list, { animation: 150, handle: '.drag-handle', onEnd: updateImageState });
+
+  updateNextBtn3();
+}
+
+function triggerUpload(btn) {
+  btn.closest('.image-item').querySelector('input[type="file"]').click();
+}
+
+function onFileSelect(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const item = fileInput.closest('.image-item');
+  const urlInput = item.querySelector('.imageUrlField');
+  const progressWrap = item.querySelector('.progress-bar-wrap');
+  const progressFill = item.querySelector('.progress-bar-fill');
+
+  if (!state.shop) { showToast('先に店舗を選択してください', 'error'); return; }
+
+  const folderName = state.shop || 'default';
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', UPLOAD_PRESET);
+  formData.append('folder', folderName);
+
+  progressWrap.style.display = 'block';
+  progressFill.style.width = '0';
+
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", url);
-  xhr.upload.onprogress = (e) => {
-    if (e.lengthComputable) progress.value = (e.loaded / e.total) * 100;
+  xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+  xhr.upload.onprogress = e => {
+    if (e.lengthComputable) progressFill.style.width = (e.loaded / e.total * 100) + '%';
   };
   xhr.onload = () => {
-    progress.value = 100;
     try {
       const data = JSON.parse(xhr.responseText);
       if (data.secure_url) {
-        inputEl.value = data.secure_url;
-        showPreview(data.secure_url, parentDiv);
-        validateInputs();
-      } else alert("アップロードに失敗しました");
-    } catch(e) { alert("アップロードエラー: " + e.message); }
+        urlInput.value = data.secure_url;
+        showThumb(item, data.secure_url);
+        updateImageState();
+        updateNextBtn3();
+        showToast('アップロード完了！');
+      } else {
+        showToast('アップロードに失敗しました', 'error');
+      }
+    } catch(e) { showToast('エラー: ' + e.message, 'error'); }
   };
-  xhr.onerror = () => alert("アップロードに失敗しました");
+  xhr.onerror = () => showToast('アップロードに失敗しました', 'error');
   xhr.send(formData);
 }
 
-// プレビュー表示
-function showPreview(url, parentDiv) {
-  let preview = parentDiv.querySelector('.preview-img');
-  if (!preview) {
-    preview = document.createElement('img');
-    preview.className = 'preview-img';
-    parentDiv.appendChild(preview);
+function onImageUrlChange(input) {
+  const item = input.closest('.image-item');
+  if (input.value.trim()) showThumb(item, input.value.trim());
+  else {
+    const thumb = item.querySelector('.img-thumb');
+    thumb.style.display = 'none';
   }
-  preview.src = url;
+  updateNextBtn3();
 }
 
-// アップロードボタン追加
-function addUploadButton(div) {
-  const uploadBtn = document.createElement('button');
-  uploadBtn.textContent = 'アップロード';
-  uploadBtn.className = 'uploadBtn';
-
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.style.display = 'none';
-
-  uploadBtn.onclick = () => fileInput.click();
-  fileInput.onchange = () => {
-    const file = fileInput.files[0];
-    if (file) uploadToCloudinary(file, div.querySelector('.imageUrl'), div);
-  };
-
-  div.appendChild(uploadBtn);
-  div.appendChild(fileInput);
+function onImageUrlBlur(input) {
+  const val = input.value.trim();
+  if (val) showThumb(input.closest('.image-item'), val);
 }
 
-// 初期1枚目にアップロードボタン
-addUploadButton(document.querySelector('.image-input'));
-
-// 新しい画像追加
-function addImageField() {
-  if (imageCount >= 99) { alert('画像は最大99枚までです。'); return; }
-  imageCount++;
-  const div = document.createElement('div');
-  div.className = 'image-input';
-  div.innerHTML = `
-    <label>画像URL（${imageCount}枚目）</label>
-    <input type="text" class="imageUrl" placeholder="https://example.com/image${imageCount}.jpg" />
-    <div><button class="removeBtn" onclick="removeImageField(this)">削除</button></div>
-  `;
-  addUploadButton(div);
-  imageInputs.appendChild(div);
-  validateInputs();
+function showThumb(item, url) {
+  const thumb = item.querySelector('.img-thumb');
+  thumb.src = url;
+  thumb.style.display = 'block';
+  thumb.onerror = () => { thumb.style.display = 'none'; };
 }
 
-// 削除
-function removeImageField(btn) { btn.closest('.image-input').remove(); validateInputs(); }
-
-// Sortable対応
-Sortable.create(imageInputs, { animation: 150, handle: '.image-input' });
-
-// HTML生成
-function generateCode() {
-  const shop = shopSelect;
-  const images = [...document.querySelectorAll('.imageUrl')].map(i => i.value.trim()).filter(Boolean);
-  if (!shop.value || images.length === 0) return;
-
-  const shopId = shop.value;
-  const reviewUrl = shop.selectedOptions[0].dataset.review;
-  const vanillaUrl = shop.selectedOptions[0].dataset.vanilla;
-  const goldUrl = shop.selectedOptions[0].dataset.gold;
-  const isCocktail = shopId === 'kktrszok';
-
-  const waveBg = (color1,color2) => `background:linear-gradient(90deg,${color1},${color2});position:relative;overflow:hidden;`;
-  const styles = isCocktail
-    ? [`${waveBg('#ff7eb3','#ff758c')}color:#fff;`,` ${waveBg('#6a85b6','#bac8e0')}color:#fff;`,` ${waveBg('#a8edea','#fed6e3')}color:#222;`,` ${waveBg('#f6d365','#fda085')}color:#222;font-weight:bold;`]
-    : ['background:#ff3366;color:#fff;','background:#2196F3;color:#fff;','background:#9C27B0;color:#fff;','background:linear-gradient(45deg,#FFD700,#FFA500);color:#000;font-weight:bold;'];
-
-  let htmlCode = images.map(url => `<p><img src="${url}" width="100%" style="cursor:pointer;" onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{/* kept */}).catch(console.error);})()"></p>`).join('\n');
-
-  htmlCode += `<div style="display:flex;flex-wrap:wrap;">
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{/* kept */}).catch(console.error);})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[0]}">このお店をキープする</button>
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${reviewUrl}';}).catch(()=>{location.href='${reviewUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[1]}">口コミを見る</button>
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${vanillaUrl}';}).catch(()=>{location.href='${vanillaUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[2]}">バニラdeデビューを見る</button>
-  <button onclick="(function(){fetch('https://tokai.qzin.jp/user/ajax/keeplist_add',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopId}'})}).then(()=>{location.href='${goldUrl}';}).catch(()=>{location.href='${goldUrl}';});})()" style="padding:12px 16px;border:none;border-radius:9999px;font-size:14px;cursor:pointer;margin:4px;flex:1;min-width:150px;transition:0.2s;${styles[3]}">入店祝金を受け取る</button>
-  </div>`;
-
-  output.value = htmlCode.trim();
-  document.getElementById('preview').innerHTML = htmlCode;
+function removeImageField(btn) {
+  btn.closest('.image-item').remove();
+  updateImageState();
+  updateNextBtn3();
 }
 
-// コピーしてトップにスクロール
-function copyCode() {
-  output.select();
-  navigator.clipboard.writeText(output.value)
-    .then(()=> { alert('コピーしました！'); window.scrollTo({ top:0, behavior:'smooth' }); })
-    .catch(()=> alert('コピーに失敗しました'));
+function updateImageState() {
+  state.images = [...document.querySelectorAll('.imageUrlField')]
+    .map(i => i.value.trim()).filter(Boolean);
 }
+
+function updateNextBtn3() {
+  const hasImage = [...document.querySelectorAll('.imageUrlField')].some(i => i.value.trim() !== '');
+  document.getElementById('nextBtn3').disabled = !hasImage;
+}
+
+/* ============================================================
+   Step 4: ボタン設定
+   ============================================================ */
+function initButtons() {
+  const site = state.site;
+  const shop = SITES[site].shops[state.shop];
+  let defaults;
+
+  if (site === 'vanilla') {
+    defaults = DEFAULT_BUTTONS_VANILLA.map(b => ({ ...b }));
+    // URLデフォルト埋め込み
+    defaults[1].url = shop.reviewUrl;
+    defaults[2].url = shop.vanillaUrl;
+    defaults[3].url = shop.goldUrl;
+  } else {
+    defaults = DEFAULT_BUTTONS_COCOA.map(b => ({ ...b }));
+    defaults[1].url = shop.shopUrl;
+  }
+  state.buttons = defaults;
+}
+
+function renderButtonEditors() {
+  const list = document.getElementById('btnList');
+  list.innerHTML = '';
+
+  state.buttons.forEach((btn, i) => {
+    const item = document.createElement('div');
+    item.className = `btn-editor-item${btn.enabled ? '' : ' disabled'}`;
+    item.id = `btnEditor_${i}`;
+
+    const presetHtml = PRESETS.map(p =>
+      `<div class="preset-chip" style="background:${p.bg};color:${p.text};"
+            onclick="applyPreset(${i},'${p.bg}','${p.text}')">${p.name}</div>`
+    ).join('');
+
+    // URLフィールドはkeepアクション以外に表示
+    const urlField = btn.action === 'keep' ? '' : `
+      <div class="form-group">
+        <label class="form-label">遷移先URL</label>
+        <input type="text" class="form-input" style="font-size:12px;font-family:monospace;"
+               value="${btn.url}"
+               placeholder="https://..."
+               oninput="updateBtnProp(${i},'url',this.value)" />
+      </div>`;
+
+    item.innerHTML = `
+      <div class="btn-editor-header" onclick="toggleCollapse(${i})">
+        <div class="btn-color-swatch" id="swatch_${i}" style="background:${btn.bgColor};"></div>
+        <div class="btn-editor-label">${btn.label}</div>
+        <div class="btn-toggle ${btn.enabled ? 'on' : ''}" id="toggle_${i}"
+             onclick="event.stopPropagation();toggleBtn(${i})"></div>
+        <span class="collapse-arrow">▼</span>
+      </div>
+      <div class="btn-editor-body">
+        <div class="form-group">
+          <label class="form-label">ボタンのテキスト</label>
+          <input type="text" class="form-input" value="${btn.text}"
+                 placeholder="ボタンに表示する文字"
+                 oninput="updateBtnProp(${i},'text',this.value)" />
+        </div>
+        ${urlField}
+        <div class="color-row">
+          <div class="color-field">
+            <label>背景色</label>
+            <div class="color-picker-wrap">
+              <input type="color" value="${btn.bgColor}" oninput="updateBtnColor(${i},'bgColor',this.value)" />
+              <input type="text" class="color-hex" value="${btn.bgColor}" maxlength="7"
+                     oninput="syncColorFromHex(${i},'bgColor',this.value)" />
+            </div>
+          </div>
+          <div class="color-field">
+            <label>文字色</label>
+            <div class="color-picker-wrap">
+              <input type="color" value="${btn.textColor}" oninput="updateBtnColor(${i},'textColor',this.value)" />
+              <input type="text" class="color-hex" value="${btn.textColor}" maxlength="7"
+                     oninput="syncColorFromHex(${i},'textColor',this.value)" />
+            </div>
+          </div>
+        </div>
+        <div class="radius-row">
+          <div class="radius-label-row">
+            <label>角丸（形）</label>
+            <span class="radius-value" id="radiusVal_${i}">${btn.radius}px</span>
+          </div>
+          <input type="range" class="radius-slider" min="0" max="99" value="${btn.radius}"
+                 oninput="updateBtnProp(${i},'radius',parseInt(this.value));document.getElementById('radiusVal_${i}').textContent=this.value+'px'" />
+        </div>
+        <div>
+          <label class="form-label" style="margin-bottom:8px;">カラープリセット</label>
+          <div class="preset-row">${presetHtml}</div>
+        </div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function toggleCollapse(i) {
+  document.getElementById(`btnEditor_${i}`).classList.toggle('collapsed');
+}
+
+function toggleBtn(i) {
+  state.buttons[i].enabled = !state.buttons[i].enabled;
+  const toggle = document.getElementById(`toggle_${i}`);
+  toggle.classList.toggle('on', state.buttons[i].enabled);
+  document.getElementById(`btnEditor_${i}`).classList.toggle('disabled', !state.buttons[i].enabled);
+  updateLivePreview();
+}
+
+function updateBtnProp(i, prop, val) {
+  state.buttons[i][prop] = val;
+  updateLivePreview();
+}
+
+function updateBtnColor(i, prop, val) {
+  state.buttons[i][prop] = val;
+  // hex入力も同期
+  const body = document.getElementById(`btnEditor_${i}`).querySelector('.btn-editor-body');
+  const hexInputs = body.querySelectorAll('.color-hex');
+  if (prop === 'bgColor')   { hexInputs[0].value = val; document.getElementById(`swatch_${i}`).style.background = val; }
+  if (prop === 'textColor') hexInputs[1].value = val;
+  updateLivePreview();
+}
+
+function syncColorFromHex(i, prop, val) {
+  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+    state.buttons[i][prop] = val;
+    const body = document.getElementById(`btnEditor_${i}`).querySelector('.btn-editor-body');
+    const colorInputs = body.querySelectorAll('input[type="color"]');
+    if (prop === 'bgColor')   { colorInputs[0].value = val; document.getElementById(`swatch_${i}`).style.background = val; }
+    if (prop === 'textColor') colorInputs[1].value = val;
+    updateLivePreview();
+  }
+}
+
+function applyPreset(i, bg, text) {
+  state.buttons[i].bgColor   = bg;
+  state.buttons[i].textColor = text;
+  // エディタのUI更新
+  const body = document.getElementById(`btnEditor_${i}`).querySelector('.btn-editor-body');
+  const colorInputs = body.querySelectorAll('input[type="color"]');
+  const hexInputs   = body.querySelectorAll('.color-hex');
+  colorInputs[0].value = bg;   hexInputs[0].value = bg;
+  colorInputs[1].value = text; hexInputs[1].value = text;
+  document.getElementById(`swatch_${i}`).style.background = bg;
+  updateLivePreview();
+}
+
+function updateLivePreview() {
+  const preview = document.getElementById('liveButtonPreview');
+  preview.innerHTML = '';
+  state.buttons.forEach(btn => {
+    if (!btn.enabled || !btn.text) return;
+    const el = document.createElement('div');
+    el.className = 'preview-btn-item';
+    el.textContent = btn.text;
+    el.style.backgroundColor = btn.bgColor;
+    el.style.color = btn.textColor;
+    el.style.borderRadius = btn.radius + 'px';
+    preview.appendChild(el);
+  });
+}
+
+/* ============================================================
+   Step 5: HTML生成
+   ============================================================ */
+function generateAndGoStep5() {
+  updateImageState();
+  if (state.images.length === 0) { showToast('画像を最低1枚追加してください', 'error'); return; }
+
+  const site = state.site;
+  const shop = state.shop;
+  const shopData = SITES[site].shops[shop];
+  const btns = state.buttons.filter(b => b.enabled && b.text);
+
+  let html = '';
+
+  if (site === 'vanilla') {
+    // バニラ: 画像クリックでキープ + ボタン群
+    const keepFn = `(function(){fetch('${SITES.vanilla.keepUrl}',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopData.id}'})}).then(r=>{}).catch(console.error);})()`;
+
+    html += state.images.map(url =>
+      `<p><img src="${url}" width="100%" style="cursor:pointer;border-radius:8px;" onclick="${keepFn}"></p>`
+    ).join('\n');
+
+    html += '\n<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">\n';
+    btns.forEach(btn => {
+      const style = `padding:12px 16px;border:none;border-radius:${btn.radius}px;font-size:14px;font-weight:bold;cursor:pointer;flex:1;min-width:140px;background:${btn.bgColor};color:${btn.textColor};`;
+      if (btn.action === 'keep') {
+        html += `  <button onclick="${keepFn}" style="${style}">${btn.text}</button>\n`;
+      } else {
+        const navFn = `(function(){fetch('${SITES.vanilla.keepUrl}',{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body:new URLSearchParams({shop_id:'${shopData.id}'})}).then(()=>{location.href='${btn.url}';}).catch(()=>{location.href='${btn.url}';});})()`;
+        html += `  <button onclick="${navFn}" style="${style}">${btn.text}</button>\n`;
+      }
+    });
+    html += '</div>';
+
+  } else {
+    // cocoa: 画像 + job_keepリンク（横並び flex）
+    html += state.images.map(url =>
+      `<p><img src="${url}" width="100%" style="border-radius:8px;display:block;"></p>`
+    ).join('\n');
+
+    // keepボタン用のhidden input（1つだけ先に出力）
+    const keepBtn = btns.find(b => b.action === 'keep');
+    if (keepBtn) {
+      html += `\n<input type="hidden" name="shop_autonum" value="${shopData.autonum}">`;
+    }
+
+    // ボタン群を横並びflexコンテナで囲む
+    html += `\n<ul style="list-style:none!important;padding:0!important;margin:14px 0 0!important;display:flex!important;flex-wrap:wrap!important;gap:10px!important;">\n`;
+
+    btns.forEach(btn => {
+      if (btn.action === 'keep') {
+        // job_keepボタン：cocoaの公式スタイルをベースにカスタム色を適用
+        const liStyle = `display:flex!important;align-items:center!important;justify-content:center!important;width:200px!important;height:50px!important;border:1px solid #bfbfbf!important;border-radius:${btn.radius}px!important;background-color:${btn.bgColor}!important;list-style:none!important;margin:0!important;padding:0!important;overflow:hidden!important;`;
+        const linkStyle = `display:block!important;width:100%!important;height:100%!important;line-height:50px!important;color:${btn.textColor}!important;text-decoration:none!important;font-size:14px!important;font-weight:bold!important;text-align:center!important;background-color:transparent!important;background-image:url('https://cocoa-job.jp/assets/img/user/pc/shop/ico-keep-grey.png')!important;background-repeat:no-repeat!important;background-position:28px center!important;background-size:18px 17px!important;padding-left:20px!important;border:none!important;box-shadow:none!important;`;
+        html += `  <li style="${liStyle}">\n`;
+        html += `    <a href="javascript:void(0);" class="job_keep" style="${linkStyle}">${btn.text}</a>\n`;
+        html += `  </li>\n`;
+      } else {
+        // 通常リンクボタン：同サイズでカスタムカラー
+        const liStyle = `display:flex!important;align-items:center!important;justify-content:center!important;width:200px!important;height:50px!important;border:none!important;border-radius:${btn.radius}px!important;background-color:${btn.bgColor}!important;list-style:none!important;margin:0!important;padding:0!important;overflow:hidden!important;`;
+        const linkStyle = `display:block!important;width:100%!important;height:100%!important;line-height:50px!important;color:${btn.textColor}!important;text-decoration:none!important;font-size:14px!important;font-weight:bold!important;text-align:center!important;background-color:transparent!important;`;
+        html += `  <li style="${liStyle}">\n`;
+        html += `    <a href="${btn.url || '#'}" style="${linkStyle}">${btn.text}</a>\n`;
+        html += `  </li>\n`;
+      }
+    });
+    html += '</ul>';
+  }
+
+  document.getElementById('outputCode').value = html.trim();
+  document.getElementById('htmlPreviewArea').innerHTML = html.trim();
+
+  goToStep(5);
+}
+
+function copyOutput() {
+  const code = document.getElementById('outputCode').value;
+  const btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✅ コピー済み';
+    btn.classList.add('copied');
+    showToast('HTMLをコピーしました！ブログに貼り付けてください 🎉');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2500);
+  }).catch(() => showToast('コピーに失敗しました', 'error'));
+}
+
+/* ============================================================
+   リセット
+   ============================================================ */
+function resetAll() {
+  state = { site: null, shop: null, images: [], buttons: [], currentStep: 1, maxReached: 1 };
+  imageCount = 0;
+  document.getElementById('imageList').innerHTML = '';
+  document.getElementById('btnList').innerHTML = '';
+  document.getElementById('liveButtonPreview').innerHTML = '';
+  document.getElementById('outputCode').value = '';
+  document.getElementById('htmlPreviewArea').innerHTML = '';
+  document.getElementById('siteVanilla').classList.remove('selected');
+  document.getElementById('siteCocoa').classList.remove('selected');
+  document.getElementById('shopChanko').classList.remove('selected');
+  document.getElementById('shopKakuteru').classList.remove('selected');
+  document.getElementById('nextBtn1').disabled = true;
+  document.getElementById('nextBtn2').disabled = true;
+  document.getElementById('nextBtn3').disabled = true;
+  if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
+  goToStep(1);
+}
+
+/* ============================================================
+   初期化
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  updateStepNav();
+});
 </script>
 </body>
 </html>
